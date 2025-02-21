@@ -8,6 +8,16 @@ const ChatInterface = () => {
   const [inputText, setInputText] = useState("");
   const [messages, setMessages] = useState([]);
   const [selectedLanguage, setSelectedLanguage] = useState("en");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const TRANSLATE_TOKEN = process.env.REACT_APP_TRANSLATE_TOKEN;
+  const DETECT_TOKEN = process.env.REACT_APP_DETECT_TOKEN;
+  const SUMMARIZE_TOKEN = process.env.REACT_APP_SUMMARIZE_TOKEN;
+
+  const BASE_URL = "https://localhost:3000"; 
+  const DETECT_ENDPOINT = `${BASE_URL}/language/detect`;
+  const SUMMARIZE_ENDPOINT = `${BASE_URL}/summarize`;
+  const TRANSLATE_ENDPOINT = `${BASE_URL}/translate`;
 
   const languages = [
     { code: "en", name: "English" },
@@ -19,14 +29,17 @@ const ChatInterface = () => {
   ];
 
   useEffect(() => {
-    if (!window.ai) {
-      console.warn(
-        "Chrome AI APIs not available. Enable experimental flags in chrome://flags (e.g., #prompt-api) or use Chrome Canary."
-      );
+    const missingTokens = [];
+    if (!DETECT_TOKEN) missingTokens.push("Language Detection");
+    if (!SUMMARIZE_TOKEN) missingTokens.push("Summarization");
+    if (!TRANSLATE_TOKEN) missingTokens.push("Translation");
+
+    if (missingTokens.length > 0) {
+      console.warn(`Missing API tokens for: ${missingTokens.join(", ")}. Add them to .env`);
       setMessages((prev) => [
         ...prev,
         {
-          text: "Chrome AI APIs not detected. Enable experimental features.",
+          text: `Missing API tokens for: ${missingTokens.join(", ")}. Please configure the application.`,
           type: "bot",
           error: true,
         },
@@ -44,17 +57,30 @@ const ChatInterface = () => {
     }
 
     setMessages((prev) => [...prev, { text: inputText, type: "user" }]);
+    setIsLoading(true);
 
     try {
-      const langSession = await window.ai.languageDetector.create({});
-      const langResult = await langSession.detect(inputText);
-      const language = langResult[0]?.language || "Unknown";
+      // Language Detection API call
+      const detectResponse = await fetch(DETECT_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${DETECT_TOKEN}`, 
+          "Content-Type": "application/json",
+          "Origin-Trial": DETECT_TOKEN, 
+        },
+        body: JSON.stringify({ text: inputText }),
+      });
+
+      if (!detectResponse.ok) throw new Error("Language detection failed");
+      const detectData = await detectResponse.json();
+      const language = detectData.language || "Unknown";
 
       setMessages((prev) => [
         ...prev,
         { text: `Detected Language: ${language}`, type: "bot" },
       ]);
 
+      // Offer summarization for long English texts
       if (language === "en" && inputText.length > 150) {
         setMessages((prev) => [
           ...prev,
@@ -69,28 +95,42 @@ const ChatInterface = () => {
     } catch (error) {
       setMessages((prev) => [
         ...prev,
-        { text: "Error detecting language", type: "bot", error: true },
+        { text: `Error detecting language: ${error.message}`, type: "bot", error: true },
       ]);
       console.error("Language Detection Error:", error);
+    } finally {
+      setIsLoading(false);
+      setInputText("");
     }
-
-    setInputText("");
   };
 
   const handleSummarize = async (text) => {
+    setIsLoading(true);
     try {
-      const session = await window.ai.summarizer.create({});
-      const summary = await session.summarize(text);
+      const summarizeResponse = await fetch(SUMMARIZE_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${SUMMARIZE_TOKEN}`, 
+          "Content-Type": "application/json",
+          "Origin-Trial": SUMMARIZE_TOKEN, 
+        },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!summarizeResponse.ok) throw new Error("Summarization failed");
+      const summarizeData = await summarizeResponse.json();
       setMessages((prev) => [
         ...prev,
-        { text: `Summary: ${summary}`, type: "bot" },
+        { text: `Summary: ${summarizeData.summary}`, type: "bot" },
       ]);
     } catch (error) {
       setMessages((prev) => [
         ...prev,
-        { text: "Summarization error", type: "bot", error: true },
+        { text: `Summarization error: ${error.message}`, type: "bot", error: true },
       ]);
       console.error("Summarization Error:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -109,21 +149,35 @@ const ChatInterface = () => {
       return;
     }
 
+    setIsLoading(true);
     try {
-      const session = await window.ai.translator.create({
-        targetLanguage: selectedLanguage,
+      const translateResponse = await fetch(TRANSLATE_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${TRANSLATE_TOKEN}`,
+          "Content-Type": "application/json",
+          "Origin-Trial": TRANSLATE_TOKEN, 
+        },
+        body: JSON.stringify({
+          text: textToTranslate,
+          targetLanguage: selectedLanguage,
+        }),
       });
-      const translation = await session.translate(textToTranslate);
+
+      if (!translateResponse.ok) throw new Error("Translation failed");
+      const translateData = await translateResponse.json();
       setMessages((prev) => [
         ...prev,
-        { text: `Translated: ${translation}`, type: "bot" },
+        { text: `Translated: ${translateData.translation}`, type: "bot" },
       ]);
     } catch (error) {
       setMessages((prev) => [
         ...prev,
-        { text: "Translation error", type: "bot", error: true },
+        { text: `Translation error: ${error.message}`, type: "bot", error: true },
       ]);
       console.error("Translation Error:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -142,6 +196,7 @@ const ChatInterface = () => {
                 <button
                   onClick={() => handleSummarize(msg.originalText)}
                   className="send-btn"
+                  disabled={isLoading}
                 >
                   Summarize
                 </button>
@@ -155,6 +210,7 @@ const ChatInterface = () => {
             onChange={(e) => setSelectedLanguage(e.target.value)}
             value={selectedLanguage}
             aria-label="Select language for translation"
+            disabled={isLoading}
           >
             {languages.map((lang) => (
               <option key={lang.code} value={lang.code}>
@@ -162,7 +218,7 @@ const ChatInterface = () => {
               </option>
             ))}
           </select>
-          <button onClick={handleTranslate} className="send-btn">
+          <button onClick={handleTranslate} className="send-btn" disabled={isLoading}>
             Translate
           </button>
         </div>
@@ -173,8 +229,9 @@ const ChatInterface = () => {
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             aria-label="Message input"
+            disabled={isLoading}
           />
-          <button onClick={handleSend} className="send-button">
+          <button onClick={handleSend} className="send-button" disabled={isLoading}>
             <FontAwesomeIcon icon={faCircleArrowRight} />
           </button>
         </div>
