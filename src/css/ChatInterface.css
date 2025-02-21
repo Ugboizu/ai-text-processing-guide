@@ -97,9 +97,16 @@ body {
 }
 
 .send-btn {
-	padding: 8px 12px;
+	padding: 10px 15px;
 	margin-left: 20px;
 	background-color: #800080;
+	border: 1px solid #20002e;
+	border-radius: 15px;
+	color: white;
+}
+
+.send-btn:hover {
+	background-color: #c69ac6;
 }
  
   
@@ -127,14 +134,51 @@ gap: 10px;
 margin-top: 10px;
 }
 
-.error-message {
-	color: red;
-	font-weight: bold;
-	margin-top: 5px;
+.chat-message.error {
+	color: #ff0000; 
+}
+
+.translation-controls {
+	display: flex;
+	gap: 10px;
+	margin: 10px 0;
+	justify-content: center;
+	align-items: center;
+}
+  
+.translation-controls select {
+	padding: 8px 12px; 
+	font-size: 16px; 
+	border: 1px solid #20002e; 
+	border-radius: 5px; 
+	background-color: #fff; 
+	color: #333; 
+	width: 150px; 
+	cursor: pointer; 
+	appearance: none; 
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); 
+	background-repeat: no-repeat;
+	background-position: right 10px center; 
+	background-size: 12px; 
+}
+  
+  
+.translation-controls select:hover {
+	border-color: #331440; 
+}
+  
+.translation-controls select:focus {
+	outline: none; 
+	border-color: #c69ac6; 
+	box-shadow: 0 0 5px rgba(255, 0, 217, 0.5);
 }
   
 
-/* Language Selector */
+.translation-controls .send-btn {
+	margin: 0; 
+}
+
+
 .language-select {
 padding: 8px;
 border: 2px solid #331440;
