@@ -3,6 +3,7 @@ import "../css/ChatInterface.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleArrowRight } from "@fortawesome/free-solid-svg-icons";
 import Header from "../components/Header";
+import * as apiHandlers from '../utils/apiHandlers';
 
 const ChatInterface = () => {
   const [inputText, setInputText] = useState("");
@@ -29,22 +30,24 @@ const ChatInterface = () => {
   ];
 
   useEffect(() => {
-    const missingTokens = [];
-    if (!DETECT_TOKEN) missingTokens.push("Language Detection");
-    if (!SUMMARIZE_TOKEN) missingTokens.push("Summarization");
-    if (!TRANSLATE_TOKEN) missingTokens.push("Translation");
+    // ...
+    const initializeAi = async () => {
+        if (apiHandlers.isTranslatorApiAvailable()) {
+          const availability = await apiHandlers.checkLanguagePairAvailability('en', 'fr'); // Example
+          console.log("Translator availability:", availability);
+        }
 
-    if (missingTokens.length > 0) {
-      console.warn(`Missing API tokens for: ${missingTokens.join(", ")}. Add them to .env`);
-      setMessages((prev) => [
-        ...prev,
-        {
-          text: `Missing API tokens for: ${missingTokens.join(", ")}. Please configure the application.`,
-          type: "bot",
-          error: true,
-        },
-      ]);
-    }
+        if(apiHandlers.isLanguageDetectorApiAvailable()){
+          const capabilities = await apiHandlers.checkLanguageDetectorCapabilities();
+          console.log("language detector capabilities: ", capabilities);
+        }
+
+        if(apiHandlers.isSummarizerApiAvailable()){
+          const capabilities = await apiHandlers.checkSummarizerCapabilities();
+          console.log("summarizer capabilities: ", capabilities);
+        }
+      }
+      initializeAi();
   }, []);
 
   const handleSend = async () => {
