@@ -50,14 +50,33 @@ export const createTranslator = async (sourceLanguage, targetLanguage, onDownloa
     }
 };
 
-export const translateText = async (translator, text) => {
-    try {
-        return await translator.translate(text);
-    } catch (error) {
-        console.error("Translation error:", error);
-        throw error;
-    }
-};
+export async function translateText(text, targetLanguage) {
+  if (typeof window !== 'undefined' && window.ai && window.ai.translator) {
+      console.log("The Translator API is available");
+  } else {
+      return null;
+  }
+
+  try {
+      const translatorCapabilities = await window.ai.translator.capabilities();
+      const languagePairAvailable = translatorCapabilities.languagePairAvailable("auto", targetLanguage);
+
+      if (languagePairAvailable === 'no') {
+          return "Language pair not supported";
+      }
+
+      const translator = await window.ai.translator.create({
+          sourceLanguage: "auto",
+          targetLanguage: targetLanguage,
+      });
+
+      const translatedText = await translator.translate(text);
+      return translatedText;
+  } catch (error) {
+      console.error('Translation error:', error);
+      return null;
+  }
+}
 
 // --- Language Detector API ---
 export const checkLanguageDetectorCapabilities = async (onDownloadProgress) => {
@@ -94,14 +113,40 @@ export const createLanguageDetector = async (monitor) => {
     }
 };
 
-export const detectLanguage = async (detector, text) => {
-    try {
-        return await detector.detect(text);
-    } catch (error) {
-        console.error("Language detection error:", error);
-        throw error;
-    }
-};
+export async function detectLanguage(someUserText) {
+  if (typeof window !== 'undefined' && window.ai && window.ai.languageDetector) {
+      console.log("The Language Detector API is available");
+  } else {
+      return null;
+  }
+
+  try {
+      const languageDetectorCapabilities = await window.ai.languageDetector.capabilities();
+      const canDetect = languageDetectorCapabilities.available;
+      let detector;
+
+      if (canDetect === 'no') {
+          return null;
+      } else if (canDetect === 'readily') {
+          detector = await window.ai.languageDetector.create();
+      } else {
+          detector = await window.ai.languageDetector.create({
+              monitor(m) {
+                  m.addEventListener('downloadprogress', (e) => {
+                      console.log(`Downloaded ${e.loaded} of ${e.total} bytes.`);
+                  });
+              },
+          });
+          await detector.ready;
+      }
+
+      const results = await detector.detect(someUserText);
+      return results[0].detectedLanguage;
+  } catch (error) {
+      console.error('Language detection error:', error);
+      return null;
+  }
+}
 
 // --- Summarizer API ---
 export const checkSummarizerCapabilities = async (onDownloadProgress) => {
@@ -138,11 +183,26 @@ export const createSummarizer = async (options, monitor) => {
     }
 };
 
-export const summarizeText = async (summarizer, text, context) => {
-    try {
-        return await summarizer.summarize(text, { context });
-    } catch (error) {
-        console.error("Summarization error:", error);
-        throw error;
-    }
-};
+export async function summarizeText(text) {
+  if (typeof window !== 'undefined' && window.ai && window.ai.summarizer) {
+      console.log("The Summarizer API is available");
+  } else {
+      return null;
+  }
+
+  try {
+      const summarizerCapabilities = await window.ai.summarizer.capabilities();
+      const canSummarize = summarizerCapabilities.available;
+
+      if (canSummarize === 'no') {
+          return "Summarization not available";
+      }
+
+      const summarizer = await window.ai.summarizer.create();
+      const summary = await summarizer.summarize(text);
+      return summary;
+  } catch (error) {
+      console.error('Summarization error:', error);
+      return null;
+  }
+}
