@@ -3,7 +3,7 @@
 	width: 100%;
 	height: 100vh;
 	background-image: url('/src/assets/images/background.jpg');
-	background-size: 100%;
+	background-size: cover;
 	background-repeat: no-repeat;
 	background-position: center bottom;
 }
@@ -17,3 +17,4 @@
 	left: 0;
 	background-color: rgba(0, 0, 0, 0.7);
 }
+
