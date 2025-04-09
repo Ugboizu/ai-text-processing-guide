@@ -1,22 +1,4 @@
 
-body {
-	background: linear-gradient(to right, #331440, #800080);
-	
-
-}
-
-.chat-container {
-	display: flex;
-	flex-direction: column;
-	max-width: 700px;
-	height: 80vh;
-	margin: 20px auto;
-	border: 1px solid #331440;
-	border-radius: 10px;
-	overflow: hidden;
-	background:#c69ac6;
-	/* box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); */
-}
   
 .chat-output {
 	flex: 1;
@@ -43,17 +25,17 @@ body {
   
 
 .chat-message {
-	padding: 12px;
+	/* padding: 12px;
 	margin: 5px;
 	border-radius: 20px;
 	max-width: 75%;
 	word-wrap: break-word;
 	font-size: 14px;
-	line-height: 1.4;
+	line-height: 1.4; */
 }
   
 
-.chat-message.user {
+/* .chat-message.user {
 	align-self: flex-end;
 	background: #20002e;
 	color: white;
@@ -62,7 +44,7 @@ body {
 .chat-message.bot {
 	align-self: flex-start;
 	background: #ffffff;
-	color: #000;
+	color: #000; */
 }
   
 .chat-input {
