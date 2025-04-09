@@ -1,3 +1,16 @@
+# ViolaAI - AI Text Processing Interface
+
+ViolaAI is a web-based application that allows users to detect languages, translate text, and summarize paragraphs using AI-powered APIs. It provides a user-friendly chat interface for seamless interaction with these features.
+
+## Features
+
+- **Language Detection**: Automatically detect the language of the input text.
+- **Text Translation**: Translate text into multiple supported languages.
+- **Text Summarization**: Summarize long paragraphs into concise summaries (for texts over 150 characters).
+- **Interactive Chat Interface**: A clean and responsive chat interface for user interaction.
+- **Progress Indicators**: Real-time progress updates for API operations like downloading models.
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
