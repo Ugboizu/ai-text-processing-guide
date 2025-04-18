@@ -17,6 +17,9 @@ module.exports = {
         underdog : ['Underdog', 'sans-serif'],
         piedra : ['Piedra', 'sans-serif'],
       },
+      height: {
+        'screen-dynamic': 'calc(var(--vh) * 100)', // Custom dynamic height
+      },
     },
   },
   plugins: [],

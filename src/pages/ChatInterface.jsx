@@ -150,7 +150,7 @@ const ChatInterface = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
+    <div className="h-screen-dynamic bg-gray-100 flex flex-col">
       <Header />
       <div className="flex flex-col w-full max-w-4xl mx-auto h-[calc(100vh-4rem)] mt-4 bg-white rounded-lg shadow-lg overflow-hidden">
         <div
